@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-900 text-slate-100 font-sans">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE IQ ZONE - School Quiz Challenge</title>
+    <!-- Local Tailwind CSS build -->
+    <link href="./dist/output.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        /* Short fade transition */
+        .fade-transition {
+            transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+        /* Custom focus outline */
+        button:focus-visible, input:focus-visible {
+            outline: 3px solid #f59e0b;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col justify-between overflow-x-hidden bg-navy-950 text-slate-100">
+
+    <!-- TOP HEADER / NAVBAR (Persistent) -->
+    <header class="w-full bg-navy-900 border-b border-slate-800 px-6 py-4 flex justify-between items-center z-20 shadow-md">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="goHome()">
+            <div class="bg-gold-500 text-navy-950 font-black px-2.5 py-1 rounded text-xl tracking-wider"></div>
+            <span class="font-bold text-xl md:text-2xl tracking-tight text-white">THE IQ ZONE</span>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+            <!-- Audio Toggle Button -->
+            <button id="sound-toggle-btn" onclick="toggleSound()" class="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-lg border border-slate-700 transition-colors" aria-label="Toggle Sound">
+                <svg id="sound-icon-on" class="w-5 h-5 text-gold-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+                <svg id="sound-icon-off" class="w-5 h-5 text-slate-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path></svg>
+                <span id="sound-text" class="text-sm font-semibold">Sound: ON</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- LIFELINE NOTIFICATION BANNER (Projector Notification Overlay) -->
+    <div id="lifeline-notification" class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 w-11/12 max-w-2xl bg-gold-500 text-navy-950 font-extrabold text-2xl md:text-3xl text-center py-4 px-6 rounded-xl shadow-2xl border-2 border-white transition-all duration-300 opacity-0 pointer-events-none translate-y-[-20px]">
+        LIFELINE ACTIVATED
+    </div>
+
+    <!-- MAIN CONTAINER FOR SCREENS -->
+    <main class="flex-grow flex items-center justify-center p-4 md:p-8 relative">
+        
+        <!-- SCREEN 1: WELCOME SCREEN -->
+        <section id="screen-welcome" class="screen-container w-full max-w-4xl text-center flex flex-col items-center justify-center py-10 fade-transition">
+            <div class="inline-block bg-slate-800 text-gold-400 font-semibold px-4 py-1.5 rounded-full text-sm md:text-base mb-6 border border-slate-700 tracking-wider uppercase">
+                9C
+            </div>
+            <h1 class="text-5xl md:text-7xl font-black text-white tracking-tight mb-4">
+                THE IQ ZONE
+            </h1>
+            <p class="text-xl md:text-3xl text-slate-300 font-medium mb-10 max-w-2xl">
+                “ඉක්මනින් හිතලා උත්තර දෙන්න”
+            </p>
+            <button onclick="navigateTo('screen-fff')" class="bg-gold-500 hover:bg-gold-400 text-navy-950 font-extrabold text-2xl px-10 py-5 rounded-xl shadow-lg hover:shadow-gold-500/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+                START QUIZ
+            </button>
+        </section>
+
+        <!-- SCREEN 2: FASTEST FINGER FIRST SCREEN -->
+        <section id="screen-fff" class="screen-container hidden w-full max-w-3xl bg-navy-900 border border-slate-800 p-8 md:p-10 rounded-2xl shadow-2xl text-center fade-transition">
+            <div class="inline-block bg-gold-500/10 border border-gold-500/30 text-gold-400 font-extrabold px-4 py-1.5 rounded-full text-xs md:text-sm uppercase tracking-widest mb-6">
+                ⚡ FASTEST FINGER FIRST
+            </div>
+
+            <h2 class="text-2xl md:text-4xl font-black text-white mb-6 leading-snug">
+                විද්‍යාඥයෙකු නමින් නම් නොකළ මිනුම් ඒකකය මින් කුමක්ද?
+            </h2>
+
+            <!-- Options Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 text-left">
+                <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl flex items-center space-x-3">
+                    <span class="w-8 h-8 rounded-lg bg-navy-900 text-gold-400 font-black flex items-center justify-center text-sm border border-slate-700">A</span>
+                    <span class="text-lg font-semibold text-slate-200">ඇම්පියර් (Ampere)</span>
+                </div>
+                <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl flex items-center space-x-3">
+                    <span class="w-8 h-8 rounded-lg bg-navy-900 text-gold-400 font-black flex items-center justify-center text-sm border border-slate-700">B</span>
+                    <span class="text-lg font-semibold text-slate-200">ඕම් (Ohm)</span>
+                </div>
+                <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl flex items-center space-x-3">
+                    <span class="w-8 h-8 rounded-lg bg-navy-900 text-gold-400 font-black flex items-center justify-center text-sm border border-slate-700">C</span>
+                    <span class="text-lg font-semibold text-slate-200">කැන්ඩෙලා (Candela)</span>
+                </div>
+                <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl flex items-center space-x-3">
+                    <span class="w-8 h-8 rounded-lg bg-navy-900 text-gold-400 font-black flex items-center justify-center text-sm border border-slate-700">D</span>
+                    <span class="text-lg font-semibold text-slate-200">වොට් (Watt)</span>
+                </div>
+            </div>
+
+            <!-- Host Action Area -->
+            <div id="fff-reveal-box" class="hidden mb-8 bg-emerald-950/50 border border-emerald-500/40 p-4 rounded-xl text-emerald-300 font-bold text-xl">
+                ඇම්පියර් (Ampere)
+            </div>
+
+            <div class="flex flex-col md:flex-row justify-center items-center gap-4">
+                <button onclick="revealFFFAnswer()" id="fff-reveal-btn" class="w-full md:w-auto bg-slate-800 hover:bg-slate-700 text-gold-400 font-extrabold text-lg px-6 py-4 rounded-xl border border-slate-700 transition-all">
+                    REVEAL ANSWER
+                </button>
+                <button onclick="navigateTo('screen-register')" class="w-full md:w-auto bg-gold-500 hover:bg-gold-400 text-navy-950 font-extrabold text-lg px-8 py-4 rounded-xl shadow-lg transition-all">
+                    CONTINUE &rarr;
+                </button>
+            </div>
+        </section>
+
+        <!-- SCREEN 3: PLAYER REGISTRATION -->
+        <section id="screen-register" class="screen-container hidden w-full max-w-2xl bg-navy-900 border border-slate-800 p-8 md:p-10 rounded-2xl shadow-2xl text-center fade-transition">
+            <h2 class="text-3xl md:text-4xl font-black text-white mb-3">FASTEST PLAYERS</h2>
+            <p class="text-slate-400 text-lg mb-8">Enter the names of both players to continue.</p>
+
+            <form id="player-registration-form" onsubmit="registerPlayers(event)" class="space-y-5 text-left">
+                <label class="block">
+                    <span class="block text-sm font-bold text-gold-400 mb-2">PLAYER 1</span>
+                    <input id="player-one-input" name="playerOne" type="text" maxlength="40" required autocomplete="name" placeholder="Enter first player's name" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500">
+                </label>
+                <label class="block">
+                    <span class="block text-sm font-bold text-gold-400 mb-2">PLAYER 2</span>
+                    <input id="player-two-input" name="playerTwo" type="text" maxlength="40" required autocomplete="off" placeholder="Enter second player's name" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500">
+                </label>
+                <button type="submit" class="w-full bg-gold-500 hover:bg-gold-400 text-navy-950 font-extrabold text-lg px-8 py-4 rounded-xl shadow-lg transition-all">
+                    REGISTER PLAYERS
+                </button>
+            </form>
+
+            <div id="registered-players" class="hidden mt-8" aria-live="polite">
+                <h3 class="text-xl font-bold text-white mb-4">අපි එහෙනම් වැඩේ පටන් ගමු</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 text-left">
+                    <div class="bg-slate-800 border border-slate-700 rounded-xl p-4">
+                        <span class="block text-xs font-bold text-gold-400 mb-1">PLAYER 1</span>
+                        <span id="player-one-name" class="text-lg font-bold text-white"></span>
+                    </div>
+                    <div class="bg-slate-800 border border-slate-700 rounded-xl p-4">
+                        <span class="block text-xs font-bold text-gold-400 mb-1">PLAYER 2</span>
+                        <span id="player-two-name" class="text-lg font-bold text-white"></span>
+                    </div>
+                </div>
+                <button type="button" onclick="continueToTopics()" class="w-full bg-gold-500 hover:bg-gold-400 text-navy-950 font-extrabold text-lg px-8 py-4 rounded-xl shadow-lg transition-all">
+                    CONTINUE &rarr;
+                </button>
+            </div>
+        </section>
+
+        <!-- SCREEN 4: TOPIC SELECTION -->
+        <section id="screen-topics" class="screen-container hidden w-full max-w-5xl text-center fade-transition">
+            <h2 class="text-3xl md:text-5xl font-black text-white mb-2">මාතෘකාවක් තෝරන්න</h2>
+            <p class="text-slate-400 text-lg md:text-xl mb-10">Select a topic</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Topic A -->
+                <div onclick="selectTopic('gk')" class="bg-navy-900 border border-slate-700 hover:border-gold-500 rounded-2xl p-6 text-left cursor-pointer transition-all hover:-translate-y-1 hover:shadow-xl flex flex-col justify-between group">
+                    <div>
+                        <div class="bg-slate-800 text-gold-400 text-xs font-extrabold px-3 py-1 rounded-full w-max mb-4 group-hover:bg-gold-500 group-hover:text-navy-950 transition-colors">5 QUESTIONS</div>
+                        <h3 class="text-2xl font-bold text-white mb-2">ආසියානු රටවල්</h3>
+                        <p class="text-slate-400 text-sm">මෙහිදි ඔබට ආසියානු රටවල් පිළිබඳව ප්‍රශ්න ලබා දෙනු ඇත.</p>
+                    </div>
+                    <div class="mt-6 text-gold-400 font-bold text-sm group-hover:translate-x-1 transition-transform flex items-center">
+                        තෝරන්න &rarr;
+                    </div>
+                </div>
+
+                <!-- Topic B -->
+                <div onclick="selectTopic('science')" class="bg-navy-900 border border-slate-700 hover:border-gold-500 rounded-2xl p-6 text-left cursor-pointer transition-all hover:-translate-y-1 hover:shadow-xl flex flex-col justify-between group">
+                    <div>
+                        <div class="bg-slate-800 text-gold-400 text-xs font-extrabold px-3 py-1 rounded-full w-max mb-4 group-hover:bg-gold-500 group-hover:text-navy-950 transition-colors">5 QUESTIONS</div>
+                        <h3 class="text-2xl font-bold text-white mb-2">සාගර හා ගංගා</h3>
+                        <p class="text-slate-400 text-sm">මෙහිදි ඔබට සාගර හා ගංගා පිළිබඳව ප්‍රශ්න ලබා දෙනු ඇත.</p>
+                    </div>
+                    <div class="mt-6 text-gold-400 font-bold text-sm group-hover:translate-x-1 transition-transform flex items-center">
+                        තෝරන්න &rarr;
+                    </div>
+                </div>
+
+                <!-- Topic C -->
+                <div onclick="selectTopic('sports')" class="bg-navy-900 border border-slate-700 hover:border-gold-500 rounded-2xl p-6 text-left cursor-pointer transition-all hover:-translate-y-1 hover:shadow-xl flex flex-col justify-between group">
+                    <div>
+                        <div class="bg-slate-800 text-gold-400 text-xs font-extrabold px-3 py-1 rounded-full w-max mb-4 group-hover:bg-gold-500 group-hover:text-navy-950 transition-colors">5 QUESTIONS</div>
+                        <h3 class="text-2xl font-bold text-white mb-2">ළමා කතන්දර</h3>
+                        <p class="text-slate-400 text-sm">මෙහිදි ඔබට අපි සැවොම අසනු ලැබූ ළමා කතන්දර පිළිබඳව ප්‍රශ්න ලබා දෙනු ඇත.</p>
+                    </div>
+                    <div class="mt-6 text-gold-400 font-bold text-sm group-hover:translate-x-1 transition-transform flex items-center">
+                        තෝරන්න &rarr;
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 4: QUIZ PRESENTATION SCREEN -->
+        <section id="screen-quiz" class="screen-container hidden w-full max-w-5xl fade-transition">
+            
+            <!-- TOP BAR: TOPIC, PROGRESS, SCORE COUNTER -->
+            <div class="flex flex-col md:flex-row justify-between items-center bg-navy-900 border border-slate-800 rounded-xl px-6 py-4 mb-6 gap-4 shadow-lg">
+                <div>
+                    <span class="text-slate-400 text-xs font-bold uppercase tracking-widest block">තෝරාගත් මාතෘකාව</span>
+                    <span id="quiz-topic-title" class="text-xl md:text-2xl font-extrabold text-gold-400">ආසියානු රටවල්</span>
+                </div>
+
+                <div class="flex items-center space-x-6">
+                    <!-- Progress Dots -->
+                    <div class="flex items-center space-x-2">
+                        <span id="quiz-question-num" class="text-sm font-bold text-slate-300 mr-2">1/5</span>
+                        <div id="progress-dots" class="flex space-x-2">
+                            <!-- Dots populated via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Round Score Tracker -->
+                    <div class="bg-slate-800 border border-slate-700 px-4 py-1.5 rounded-lg flex items-center space-x-2">
+                        <span class="text-xs font-extrabold text-slate-400 uppercase tracking-wider">SCORE:</span>
+                        <span id="quiz-total-score" class="text-xl font-black text-gold-400">0 / 5</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QUESTION CARD -->
+            <div class="bg-navy-900 border border-slate-800 rounded-2xl p-6 md:p-10 mb-6 shadow-xl">
+                <h3 id="quiz-question-text" class="text-2xl md:text-4xl font-extrabold text-white text-center leading-snug">
+                    Question text will appear here?
+                </h3>
+            </div>
+
+            <!-- OPTIONS GRID -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button onclick="handleOptionSelect(0)" id="opt-0" class="option-btn bg-navy-900 border-2 border-slate-800 hover:border-slate-600 rounded-xl p-5 text-left flex items-center space-x-4 transition-all">
+                    <span class="w-10 h-10 rounded-lg bg-slate-800 text-gold-400 font-extrabold flex items-center justify-center text-lg flex-shrink-0 border border-slate-700">A</span>
+                    <span id="opt-0-text" class="text-lg md:text-xl font-semibold text-slate-200">Option A</span>
+                </button>
+
+                <button onclick="handleOptionSelect(1)" id="opt-1" class="option-btn bg-navy-900 border-2 border-slate-800 hover:border-slate-600 rounded-xl p-5 text-left flex items-center space-x-4 transition-all">
+                    <span class="w-10 h-10 rounded-lg bg-slate-800 text-gold-400 font-extrabold flex items-center justify-center text-lg flex-shrink-0 border border-slate-700">B</span>
+                    <span id="opt-1-text" class="text-lg md:text-xl font-semibold text-slate-200">Option B</span>
+                </button>
+
+                <button onclick="handleOptionSelect(2)" id="opt-2" class="option-btn bg-navy-900 border-2 border-slate-800 hover:border-slate-600 rounded-xl p-5 text-left flex items-center space-x-4 transition-all">
+                    <span class="w-10 h-10 rounded-lg bg-slate-800 text-gold-400 font-extrabold flex items-center justify-center text-lg flex-shrink-0 border border-slate-700">C</span>
+                    <span id="opt-2-text" class="text-lg md:text-xl font-semibold text-slate-200">Option C</span>
+                </button>
+
+                <button onclick="handleOptionSelect(3)" id="opt-3" class="option-btn bg-navy-900 border-2 border-slate-800 hover:border-slate-600 rounded-xl p-5 text-left flex items-center space-x-4 transition-all">
+                    <span class="w-10 h-10 rounded-lg bg-slate-800 text-gold-400 font-extrabold flex items-center justify-center text-lg flex-shrink-0 border border-slate-700">D</span>
+                    <span id="opt-3-text" class="text-lg md:text-xl font-semibold text-slate-200">Option D</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- SCREEN 5: RESULTS SCREEN -->
+        <section id="screen-results" class="screen-container hidden w-full max-w-3xl text-center fade-transition">
+            <div class="bg-navy-900 border border-slate-800 rounded-2xl p-8 md:p-10 shadow-2xl">
+                <span class="text-gold-400 font-extrabold text-sm tracking-widest uppercase mb-2 block">ROUND COMPLETED</span>
+                
+                <h2 id="result-summary-title" class="text-4xl md:text-6xl font-black text-white mb-6">
+                    ROUND COMPLETED!
+                </h2>
+
+                <!-- Final Score Display -->
+                <div class="bg-slate-900/80 border border-slate-800 p-8 rounded-2xl max-w-md mx-auto mb-8 shadow-inner">
+                    <div class="text-slate-400 font-bold text-sm uppercase tracking-wider mb-2">මුලු ලකුණු</div>
+                    <div id="result-final-score" class="text-6xl md:text-7xl font-black text-gold-400 mb-2">0 / 5</div>
+                    <p id="result-feedback-text" class="text-slate-300 font-semibold text-lg">Great effort!</p>
+                </div>
+
+                <!-- Developer Credit -->
+                <p class="text-slate-400 font-semibold text-sm md:text-base mb-8">
+                    Made by <span class="text-gold-400 font-extrabold">@chiratech </span>
+                </p>
+
+                <!-- Navigation Action Buttons -->
+                <div class="flex flex-col md:flex-row justify-center items-center gap-4">
+                    <button onclick="playAgain()" class="w-full md:w-auto bg-gold-500 hover:bg-gold-400 text-navy-950 font-extrabold text-lg px-8 py-4 rounded-xl shadow-md transition-all">
+                        ආයෙත් PLAY කරන්න
+                    </button>
+                    <button onclick="navigateTo('screen-topics')" class="w-full md:w-auto bg-slate-800 hover:bg-slate-700 text-white font-bold text-lg px-8 py-4 rounded-xl border border-slate-700 transition-all">
+                        වෙන මාතෘකාවක් තෝරන්න
+                    </button>
+                    <button onclick="goHome()" class="w-full md:w-auto bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-lg px-8 py-4 rounded-xl border border-slate-700 transition-all">
+                        මුලට යන්න
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER CREDITS -->
+    <footer class="w-full text-center py-3 border-t border-slate-800/80 bg-navy-900/50 text-slate-400 text-xs md:text-sm font-medium z-10">
+        Made by <span class="text-gold-400 font-semibold">9C students</span>
+    </footer>
+
+    <!-- FLOATING HOST REMOTE BUTTON & PANEL (VISIBLE ON QUIZ SCREEN) -->
+    <div id="host-remote-container" class="fixed bottom-6 right-6 z-40 hidden">
+        <!-- Floating Circular Remote Button -->
+        <button id="remote-trigger-btn" onclick="toggleRemotePanel()" class="w-16 h-16 bg-gold-500 hover:bg-gold-400 text-navy-950 rounded-full shadow-2xl flex items-center justify-center font-extrabold transition-all border-2 border-white focus:outline-none" title="Open Host Remote">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+        </button>
+
+        <!-- Compact Remote Control Panel -->
+        <div id="remote-panel" class="hidden absolute bottom-20 right-0 w-80 bg-navy-900 border-2 border-slate-700 rounded-2xl p-5 shadow-2xl text-slate-100 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <span class="font-extrabold text-sm text-gold-400 uppercase tracking-wider flex items-center">
+                    <span class="w-2 h-2 bg-emerald-500 rounded-full inline-block mr-2 animate-pulse"></span>
+                    HOST REMOTE
+                </span>
+                <button onclick="toggleRemotePanel()" class="text-slate-400 hover:text-white font-bold p-1">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Main Actions -->
+            <div class="space-y-2">
+                <button id="remote-btn-reveal" onclick="remoteRevealAnswer()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-between text-sm transition-colors">
+                    <span>පිලිතුර පෙන්වන්න</span>
+                    <span class="bg-emerald-700 px-2 py-0.5 rounded text-xs">R</span>
+                </button>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="remote-btn-prev" onclick="remotePrevQuestion()" class="bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 transition-colors">
+                        <span>&larr; PREV</span>
+                    </button>
+                    <button id="remote-btn-next" onclick="remoteNextQuestion()" class="bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1 transition-colors">
+                        <span>NEXT &rarr;</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Lifelines -->
+            <div class="border-t border-slate-800 pt-3">
+                <span class="text-xs font-bold text-slate-400 block mb-2 uppercase">LIFELINES</span>
+                <div class="space-y-2">
+                    <button id="remote-btn-audience" onclick="useLifeline('audience')" class="w-full bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-slate-800 text-slate-200 font-semibold py-2 px-3 rounded-lg text-xs flex items-center justify-between transition-colors">
+                        <span>ASK THE AUDIENCE</span>
+                        <span id="badge-audience" class="bg-slate-700 text-slate-300 text-[10px] px-1.5 py-0.5 rounded">READY</span>
+                    </button>
+                    <button id="remote-btn-teacher" onclick="useLifeline('teacher')" class="w-full bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-slate-800 text-slate-200 font-semibold py-2 px-3 rounded-lg text-xs flex items-center justify-between transition-colors">
+                        <span>CALL A TEACHER</span>
+                        <span id="badge-teacher" class="bg-slate-700 text-slate-300 text-[10px] px-1.5 py-0.5 rounded">READY</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="text-[10px] text-slate-500 text-center pt-1 border-t border-slate-800">
+                Shortcuts: R = Reveal | &rarr; = Next | &larr; = Prev | Esc = Close
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT SECTION -->
+    <script>
+        /* ==========================================================================
+           1. QUESTION BANK DATA STRUCTURE
+           ========================================================================== */
+        const QUESTION_BANK = {
+            gk: {
+                title: "ආසියානු රටවල්",
+                questions: [
+                    {
+                        question: "ආසියානු රටවල් පිළිබඳ නිවැරදි ප්‍රකාශය කුමක්ද?",
+                        options: ["ජපානයේ අගනුවර සෝල්‍ ය.", "නේපාලයේ අගනුවර කත්මණ්ඩු ය.", "තායිලන්තයේ අගනුවර හැනෝයි ය.", "මැලේසියාවේ අගනුවර ජකාර්ටා ය."],
+                        correct: 1. // B. නේපාලයේ අගනුවර කත්මණ්ඩු ය.
+                    },
+                    {
+                        question: "මළ මුහුද (Dead Sea) පිහිටා ඇත්තේ කුමන ආසියානු රටවල් මායිමේද?",
+                        options: ["ජොර්දානය හා ඊශ්‍රායලය", "ඉන්දියාව හා පාකිස්ථානය", "සෞදි අරාබිය හා ඕමානය ", "ජපානය හා පිලිපීනය"],
+                        correct: 0 // A. ජොර්දානය හා ඊශ්‍රායල ය.
+                    },
+                    {
+                        question: "නගන හිරුගේ දේශන (Land of the Rising Sun) ලෙස හඳුන්වන දියුණු ආසියානු රට කුමක්ද?",
+                        options: ["දකුණු කොරියාව", "චීනය", "ජපානය", "සිංගප්පූරුව"],
+                        correct: 2 // C.ජපානය
+                    },
+                    {
+                        question: "ආසියාවේ ආර්ථික දැවැන්තයෙකු වන චීනයේ අගනුවර කුමක්ද?",
+                        options: ["ෂැංහයි", "බීජිං", "හොංකොං", "ෂෙන්චෙන්"],
+                        correct: 1 // B. බීජිං
+                    },
+                    {
+                        question: "ලෝකයේ වැඩිම දුපත් සංඛ්‍යාවක් ඇති, අග්නිදිග ආසියාවේ පිහිටි විශාලතම දූපත් රාජ්‍යය කුමක්ද? ",
+                        options: ["පිලිපීනය", "මැලේසියාව", "වියට්නාමය", "ඉන්දුනීසියාව"],
+                        correct: 3 // D. ඉන්දුනීසියාව
+                    }
+                ]
+            },
+            science: {
+                title: "සාගර හා ගංගා",
+                questions: [
+                    {
+                        question: "ලෝකයේ දිගම ගංගාව වන නයිල් ගංගාව ගලා බසින්නෙ කුමන මහද්වීපය හරහාද?",
+                        options: ["ආසියාව", "දකුණු ඇමරිකාව", "අප්‍රිකාව", "යුරෝපය"],
+                        correct: 2 // C. අප්‍රිකාව
+                    },
+                    {
+                        question: "ලෝකයේ ජල ධාරිතාවෙන් හා විශාලත්වයෙන් ප්‍රධානම ස්ථානය ගන්නා, වැඩිම ජල ප්‍රමාණයක් රැගෙන යන ගංගාව කුමක්ද?",
+                        options: ["ඇමසන්", "නයිල්", "යැනිසි", "මහවැලි"],
+                        correct: 0 // A. ඇමසන් 
+                    },
+                    {
+                        question: "පෘථිවියේ මෙතෙක් සොයාගත් ගැඹුරුම සාගර ප්‍රදේශය වන මරියානා ආගාදය පිහිටා ඇත්තේ කුමන සාගරයේද? ",
+                        options: ["අත්ලාන්තික් සාගරය", "ඉන්දීය සාගරය", "පැසිෆික් සාගරය", "ආක්ටික් සාගරය"],
+                        correct: 2 // C. පැසිෆික් සාගරය
+                    },
+                    {
+                        question: "ඇමසන් ගංගාව ප්‍රධාන වශයෙන් ගලා බසින මහද්වීපය මින් කුමක්ද?",
+                        options: ["ආසියාව", "අප්‍රිකාව", "දකුණු ඇමරිකාව" , "යුරෝපය"],
+                        correct: 2 // C. දකුණු ඇමරිකාව
+                    },
+                    {
+                        question: "ලෝකයේ විශාලම කොරල් පර ප්‍රජාව වන අභ්‍යවකාශයේ සිට පවා දැකගත හැකි යැයි පැවසෙන සුප්‍රසිද්ධ මහා බාධරක පරය (Great Barrier Reef) පිහිටා ඇත්තේ කුමන රටට ආසන්න සාගර ප්‍රදේශයේද?",
+                        options: ["බ්‍රසීලය", "ඉන්දියාව", "දකුණු අප්‍රිකාව", "ඕස්ට්‍රේලියාව"],
+                        correct: 3 // D. ඕස්ට්‍රේලියාව
+                    }
+                ]
+            },
+            sports: {
+                title: "ළමා කතන්දර",
+                questions: [
+                    {
+                        question: "ඇලිස්ගේ විස්මලන්තය (Alice's Adventures in Wonderland) කතන්දරය ලියා ඇත්තේ කවුද?",
+                        options: ["ජේ.එම්.බැරී", "හාන්ස් ක්‍රිස්ටියන් ඇන්ඩර්සන්", "ලුවිස් කැරොල්", "චාල්ස් පෙරෝ"],
+                        correct: 2 // C. ලුවිස් කැරොල්
+                    },
+                    {
+                        question: "විනී-ද-පූ (Winnie-The-Pooh) කතාව නිර්මාණය කල ලේඛකයා කවුද?",
+                        options: ["කෙනත් ග්‍රැහැම්", "ඇලන් ඇලෙක්සෙන්ඩර් මිල්න්", "ඊ.බී.වයිට්", "ජේම්ස් බැරී"],
+                        correct: 1 // B. ඇලන් ඇලෙක්සෙන්ඩර් මිල්න්
+                    },
+                    {
+                        question: "පීටර් පෑන් (Peter Pan) කතාවේ නිර්මාතෘ කවුද?",
+                        options: ["ලුවිස් කැරොල්", "එ.එ.මිලන්", "ජේ.එම්.බැරී", "රෝල්ඩ් ඩාල්"],
+                        correct: 2 // C. ජේ.එම්.බැරී
+                    },
+                    {
+                        question: "හෙයිඩි (Heidi) කතාව රචනා කළේ කුමන රටක ලේඛකාවක්ද?",
+                        options: ["ස්විට්සලන්ත", "ඔස්ට්‍රියාව", "ජර්මනිය", "නොර්වේ"],
+                        correct: 0 // A. ස්විට්සලන්ත
+                    },
+                    {
+                        question: "ලෝක ප්‍රකට වැනිසියේ වෙළෙන්දා (The Mechant of Venice) නම් ඉංග්‍රීසි නාට්‍යයේ රචකයා කවුද?",
+                        options: ["ක්‍රිස්ටොෆර් මාලෝ", "විලියම් බ්ලෙක්", "විලියම් ශේක්ස්පියර්", "ජෝන් මිල්ටන්"],
+                        correct: 2 // C. විලියම් ශේක්ස්පියර්
+                    }
+                ]
+            }
+        };
+
+        /* ==========================================================================
+           2. GLOBAL GAME STATE
+           ========================================================================== */
+        let state = {
+            currentTopicKey: null,
+            currentQuestionIdx: 0,
+            questionStates: [], // Tracks answer selections & points awarded
+            lifelinesUsed: {
+                audience: false,
+                teacher: false
+            },
+            soundMuted: false,
+            playerNames: []
+        };
+
+        /* ==========================================================================
+           3. WEB AUDIO API SYNTHESIZER (OFFLINE SFX)
+           ========================================================================== */
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    audioCtx = new AudioContext();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function playTone(freq, type, duration, gainVal = 0.1) {
+            if (state.soundMuted) return;
+            try {
+                const ctx = getAudioContext();
+                if (!ctx) return;
+
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+                gain.gain.setValueAtTime(gainVal, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                osc.start();
+                osc.stop(ctx.currentTime + duration);
+            } catch (e) {
+                console.warn("Audio playback error:", e);
+            }
+        }
+
+        function playSound(type) {
+            if (state.soundMuted) return;
+
+            switch (type) {
+                case 'chime':
+                    playTone(523.25, 'sine', 0.4, 0.15); // C5
+                    setTimeout(() => playTone(659.25, 'sine', 0.5, 0.15), 100); // E5
+                    break;
+                case 'click':
+                    playTone(800, 'square', 0.05, 0.05);
+                    break;
+                case 'select':
+                    playTone(440, 'triangle', 0.15, 0.1);
+                    break;
+                case 'transition':
+                    playTone(300, 'sine', 0.1, 0.08);
+                    setTimeout(() => playTone(450, 'sine', 0.15, 0.08), 60);
+                    break;
+                case 'correct':
+                    playTone(523.25, 'triangle', 0.15, 0.15); // C5
+                    setTimeout(() => playTone(659.25, 'triangle', 0.15, 0.15), 120); // E5
+                    setTimeout(() => playTone(783.99, 'triangle', 0.3, 0.2), 240); // G5
+                    break;
+                case 'incorrect':
+                    playTone(220, 'sawtooth', 0.2, 0.15); // A3
+                    setTimeout(() => playTone(185, 'sawtooth', 0.35, 0.15), 150); // F#3
+                    break;
+                case 'reveal':
+                    playTone(587.33, 'sine', 0.2, 0.1); // D5
+                    break;
+                case 'lifeline':
+                    playTone(880, 'sine', 0.1, 0.12);
+                    setTimeout(() => playTone(1174.66, 'sine', 0.25, 0.12), 100);
+                    break;
+                case 'fanfare':
+                    playTone(523.25, 'triangle', 0.15, 0.15);
+                    setTimeout(() => playTone(659.25, 'triangle', 0.15, 0.15), 150);
+                    setTimeout(() => playTone(783.99, 'triangle', 0.15, 0.15), 300);
+                    setTimeout(() => playTone(1046.50, 'triangle', 0.5, 0.25), 450);
+                    break;
+            }
+        }
+
+        function toggleSound() {
+            state.soundMuted = !state.soundMuted;
+            const iconOn = document.getElementById('sound-icon-on');
+            const iconOff = document.getElementById('sound-icon-off');
+            const soundText = document.getElementById('sound-text');
+
+            if (state.soundMuted) {
+                iconOn.classList.add('hidden');
+                iconOff.classList.remove('hidden');
+                soundText.textContent = 'Sound: OFF';
+            } else {
+                iconOn.classList.remove('hidden');
+                iconOff.classList.add('hidden');
+                soundText.textContent = 'Sound: ON';
+                playSound('click');
+            }
+        }
+
+        /* ==========================================================================
+           4. SCREEN NAVIGATION ENGINE
+           ========================================================================== */
+        function navigateTo(screenId) {
+            getAudioContext();
+            playSound('transition');
+
+            const screens = document.querySelectorAll('.screen-container');
+            screens.forEach(screen => {
+                screen.classList.add('hidden');
+            });
+
+            const targetScreen = document.getElementById(screenId);
+            if (targetScreen) {
+                targetScreen.classList.remove('hidden');
+            }
+
+            // Remote visibility rule
+            const remoteContainer = document.getElementById('host-remote-container');
+            if (screenId === 'screen-quiz') {
+                remoteContainer.classList.remove('hidden');
+            } else {
+                remoteContainer.classList.add('hidden');
+                closeRemotePanel();
+            }
+        }
+
+        function goHome() {
+            playSound('click');
+            document.getElementById('fff-reveal-box').classList.add('hidden');
+            navigateTo('screen-welcome');
+        }
+
+        function revealFFFAnswer() {
+            playSound('reveal');
+            document.getElementById('fff-reveal-box').classList.remove('hidden');
+        }
+
+        function registerPlayers(event) {
+            event.preventDefault();
+
+            const playerOne = document.getElementById('player-one-input').value.trim();
+            const playerTwo = document.getElementById('player-two-input').value.trim();
+            if (!playerOne || !playerTwo) return;
+
+            state.playerNames = [playerOne, playerTwo];
+            document.getElementById('player-one-name').textContent = playerOne;
+            document.getElementById('player-two-name').textContent = playerTwo;
+            document.getElementById('player-registration-form').classList.add('hidden');
+            document.getElementById('registered-players').classList.remove('hidden');
+            playSound('select');
+        }
+
+        function continueToTopics() {
+            playSound('click');
+            navigateTo('screen-topics');
+        }
+
+        /* ==========================================================================
+           5. TOPIC SELECTION & QUIZ INIT
+           ========================================================================== */
+        function selectTopic(topicKey) {
+            playSound('select');
+            state.currentTopicKey = topicKey;
+            state.currentQuestionIdx = 0;
+            state.lifelinesUsed = { audience: false, teacher: false };
+
+            // Initialize 5 question states for this round
+            state.questionStates = Array(5).fill(null).map(() => ({
+                selectedOption: null,
+                revealed: false,
+                isCorrect: false
+            }));
+
+            // Reset Lifeline Badges
+            updateLifelineUI();
+
+            // Load first question & render
+            renderQuizQuestion();
+            navigateTo('screen-quiz');
+        }
+
+        /* ==========================================================================
+           6. QUIZ PRESENTATION & INTERACTION LOGIC
+           ========================================================================== */
+        function calculateTotalScore() {
+            return state.questionStates.filter(q => q.revealed && q.isCorrect).length;
+        }
+
+        function renderQuizQuestion() {
+            const topicData = QUESTION_BANK[state.currentTopicKey];
+            const qIdx = state.currentQuestionIdx;
+            const qData = topicData.questions[qIdx];
+            const currentQState = state.questionStates[qIdx];
+
+            // Render Header & Progress
+            document.getElementById('quiz-topic-title').textContent = topicData.title;
+            document.getElementById('quiz-question-num').textContent = `QUESTION ${qIdx + 1} OF 5`;
+            
+            // Progress Dots
+            const dotsContainer = document.getElementById('progress-dots');
+            dotsContainer.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+                const dot = document.createElement('div');
+                dot.className = `w-3 h-3 rounded-full transition-all ${
+                    i === qIdx ? 'bg-gold-500 scale-125' : 
+                    state.questionStates[i].revealed ? 'bg-emerald-500' : 'bg-slate-700'
+                }`;
+                dotsContainer.appendChild(dot);
+            }
+
+            // Render Score Counter
+            document.getElementById('quiz-total-score').textContent = `${calculateTotalScore()} / 5`;
+
+            // Render Question Text
+            document.getElementById('quiz-question-text').textContent = qData.question;
+
+            // Render Options
+            for (let i = 0; i < 4; i++) {
+                const optBtn = document.getElementById(`opt-${i}`);
+                const optText = document.getElementById(`opt-${i}-text`);
+                optText.textContent = qData.options[i];
+
+                // Reset styles
+                optBtn.className = "option-btn bg-navy-900 border-2 border-slate-800 hover:border-slate-600 rounded-xl p-5 text-left flex items-center space-x-4 transition-all cursor-pointer";
+
+                // Highlight selected option before reveal
+                if (currentQState.selectedOption === i && !currentQState.revealed) {
+                    optBtn.classList.add('border-gold-500', 'bg-slate-800/80');
+                }
+
+                // Highlighting after reveal
+                if (currentQState.revealed) {
+                    optBtn.classList.remove('hover:border-slate-600', 'cursor-pointer');
+                    
+                    if (i === qData.correct) {
+                        // Correct option always highlighted green
+                        optBtn.classList.add('border-emerald-500', 'bg-emerald-950/40', 'text-emerald-200');
+                    } else if (i === currentQState.selectedOption) {
+                        // Wrong selected option highlighted red
+                        optBtn.classList.add('border-red-500', 'bg-red-950/40', 'text-red-200');
+                    } else {
+                        optBtn.classList.add('opacity-50');
+                    }
+                }
+            }
+
+            // Update Remote Buttons State
+            document.getElementById('remote-btn-prev').disabled = qIdx === 0;
+            document.getElementById('remote-btn-next').disabled = false;
+        }
+
+        function handleOptionSelect(optionIdx) {
+            const currentQState = state.questionStates[state.currentQuestionIdx];
+            if (currentQState.revealed) return; // Locked once revealed
+
+            playSound('click');
+            currentQState.selectedOption = optionIdx;
+            renderQuizQuestion();
+        }
+
+        /* ==========================================================================
+           7. HOST REMOTE FUNCTIONS
+           ========================================================================== */
+        function toggleRemotePanel() {
+            playSound('click');
+            const panel = document.getElementById('remote-panel');
+            panel.classList.toggle('hidden');
+        }
+
+        function closeRemotePanel() {
+            const panel = document.getElementById('remote-panel');
+            panel.classList.add('hidden');
+        }
+
+        function remoteRevealAnswer() {
+            const qIdx = state.currentQuestionIdx;
+            const currentQState = state.questionStates[qIdx];
+            const qData = QUESTION_BANK[state.currentTopicKey].questions[qIdx];
+
+            if (currentQState.revealed) return;
+
+            currentQState.revealed = true;
+
+            if (currentQState.selectedOption !== null) {
+                if (currentQState.selectedOption === qData.correct) {
+                    playSound('correct');
+                    currentQState.isCorrect = true;
+                } else {
+                    playSound('incorrect');
+                    currentQState.isCorrect = false;
+                }
+            } else {
+                playSound('reveal');
+                currentQState.isCorrect = false;
+            }
+
+            renderQuizQuestion();
+        }
+
+        function remoteNextQuestion() {
+            playSound('click');
+            if (state.currentQuestionIdx < 4) {
+                state.currentQuestionIdx += 1;
+                renderQuizQuestion();
+            } else {
+                showResultsScreen();
+            }
+        }
+
+        function remotePrevQuestion() {
+            playSound('click');
+            if (state.currentQuestionIdx > 0) {
+                state.currentQuestionIdx -= 1;
+                renderQuizQuestion();
+            }
+        }
+
+        function useLifeline(type) {
+            if (state.lifelinesUsed[type]) return;
+
+            playSound('lifeline');
+            state.lifelinesUsed[type] = true;
+            updateLifelineUI();
+
+            const notification = document.getElementById('lifeline-notification');
+            notification.textContent = type === 'audience' 
+                ? "LIFELINE USED: ASK THE AUDIENCE" 
+                : "LIFELINE USED: CALL A TEACHER";
+
+            notification.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-[-20px]');
+            notification.classList.add('opacity-100', 'translate-y-0');
+
+            setTimeout(() => {
+                notification.classList.remove('opacity-100', 'translate-y-0');
+                notification.classList.add('opacity-0', 'pointer-events-none', 'translate-y-[-20px]');
+            }, 3000);
+        }
+
+        function updateLifelineUI() {
+            const audBtn = document.getElementById('remote-btn-audience');
+            const audBadge = document.getElementById('badge-audience');
+            const teachBtn = document.getElementById('remote-btn-teacher');
+            const teachBadge = document.getElementById('badge-teacher');
+
+            if (state.lifelinesUsed.audience) {
+                audBtn.disabled = true;
+                audBadge.textContent = "USED";
+                audBadge.className = "bg-red-900/60 text-red-300 text-[10px] px-1.5 py-0.5 rounded";
+            } else {
+                audBtn.disabled = false;
+                audBadge.textContent = "READY";
+                audBadge.className = "bg-slate-700 text-slate-300 text-[10px] px-1.5 py-0.5 rounded";
+            }
+
+            if (state.lifelinesUsed.teacher) {
+                teachBtn.disabled = true;
+                teachBadge.textContent = "USED";
+                teachBadge.className = "bg-red-900/60 text-red-300 text-[10px] px-1.5 py-0.5 rounded";
+            } else {
+                teachBtn.disabled = false;
+                teachBadge.textContent = "READY";
+                teachBadge.className = "bg-slate-700 text-slate-300 text-[10px] px-1.5 py-0.5 rounded";
+            }
+        }
+
+        /* ==========================================================================
+           8. RESULTS LOGIC
+           ========================================================================== */
+        function showResultsScreen() {
+            const finalScore = calculateTotalScore();
+            document.getElementById('result-final-score').textContent = `${finalScore} / 5`;
+
+            const feedback = document.getElementById('result-feedback-text');
+            if (finalScore === 5) {
+                feedback.textContent = "Super! ඔයා නම් වැඩ්ඩෙක්";
+            } else if (finalScore >= 3) {
+                feedback.textContent = "හොඳයි. නරකම නෑ";
+            } else {
+                feedback.textContent = "හොඳ උත්‍සහයක්! තව හොඳට Practise වෙන්න";
+            }
+
+            playSound('fanfare');
+            navigateTo('screen-results');
+        }
+
+        function playAgain() {
+            if (state.currentTopicKey) {
+                selectTopic(state.currentTopicKey);
+            } else {
+                navigateTo('screen-topics');
+            }
+        }
+
+        /* ==========================================================================
+           9. HOST KEYBOARD SHORTCUTS
+           ========================================================================== */
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            const quizScreen = document.getElementById('screen-quiz');
+            if (quizScreen.classList.contains('hidden')) return;
+
+            switch (e.key.toLowerCase()) {
+                case 'r':
+                    remoteRevealAnswer();
+                    break;
+                case 'arrowright':
+                    remoteNextQuestion();
+                    break;
+                case 'arrowleft':
+                    remotePrevQuestion();
+                    break;
+                case 'escape':
+                    closeRemotePanel();
+                    break;
+            }
+        });
+
+        // Initialize Audio Context on first interaction
+        window.addEventListener('click', () => {
+            getAudioContext();
+        }, { once: true });
+    </script>
+</body>
+</html>
