@@ -1,0 +1,11 @@
+@import "tailwindcss" source(none);
+@source "./the_iq_zone_quiz_website (1).html";
+
+@theme {
+    --color-navy-800: #0f172a;
+    --color-navy-900: #0b1120;
+    --color-navy-950: #050814;
+    --color-gold-400: #fbbf24;
+    --color-gold-500: #f59e0b;
+    --color-gold-600: #d97706;
+}
